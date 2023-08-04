@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using NextAuth.Models;
 using NextAuth.Models.Authentication.Login;
@@ -27,7 +28,7 @@ namespace NextAuth.Controllers
         private readonly IEmailService _emailS;
         private readonly IConfiguration _configuration;
         public AuthenticationController(UserManager<IdentityUser> userManager,
-            RoleManager<IdentityRole> roleManager,SignInManager<IdentityUser> signInManager, IConfiguration configuration, IEmailService emailService)
+            RoleManager<IdentityRole> roleManager, SignInManager<IdentityUser> signInManager, IConfiguration configuration, IEmailService emailService)
         {
             _userManager = userManager;
             _roleMenager = roleManager;
@@ -36,6 +37,20 @@ namespace NextAuth.Controllers
             _signInManager = signInManager;
         }
 
+        [HttpGet("getRoles")]
+        public async Task<IActionResult> getRoles()
+        {
+            var roles = await _roleMenager.Roles.ToArrayAsync();
+            if (roles != null || roles?.Length > 0)
+            {
+                return StatusCode(StatusCodes.Status200OK,
+                       new Response { Status = "Success", Message = "Roles retrieved successfully" });
+
+            }
+            return StatusCode(StatusCodes.Status400BadRequest,
+                     new Response { Status = "Error", Message = $"No role exsists in your website" });
+
+        }
         [HttpPost("Register")]
         public async Task<IActionResult> Register([FromBody] RegisterUser registerUser, string role)
         {
@@ -67,9 +82,9 @@ namespace NextAuth.Controllers
                 await _userManager.AddToRoleAsync(user, role);
                 //Add Token to Verify the Email...
                 var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-                var confirmationLink = Url.Action(nameof(ConfirmEmail), "Authentication", 
+                var confirmationLink = Url.Action(nameof(ConfirmEmail), "Authentication",
                     new { token, email = user.Email }, Request.Scheme);
-                var message = new Message(new string[] { user.Email! },"Confirmation email link",confirmationLink!);
+                var message = new Message(new string[] { user.Email! }, "Confirmation email link", confirmationLink!);
                 _emailS.SendEmail(message);
 
                 return StatusCode(StatusCodes.Status200OK,
@@ -80,9 +95,6 @@ namespace NextAuth.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError,
                        new Response { Status = "Error", Message = "The Role doesn`t Exist" });
             }
-
-
-
 
         }
 
@@ -97,15 +109,15 @@ namespace NextAuth.Controllers
             _emailS.SendEmail(message);
 
             return StatusCode(StatusCodes.Status200OK,
-                new Response { Status="Success", Message = "Email " });
+                new Response { Status = "Success", Message = "Email " });
         }
 
 
 
         [HttpGet("ConfirmEmail")]
-        public async Task<IActionResult>ConfirmEmail(string token,string email)
+        public async Task<IActionResult> ConfirmEmail(string token, string email)
         {
-            var user= await _userManager.FindByEmailAsync(email);
+            var user = await _userManager.FindByEmailAsync(email);
 
             if (user != null)
             {
@@ -125,25 +137,11 @@ namespace NextAuth.Controllers
         [Route("Login")]
         public async Task<IActionResult> Login([FromBody] LoginModel login)
         {
-
             var user = await _userManager.FindByEmailAsync(login.Email);
 
             //Checking the user and  Password
-            if ( user!=null &&await _userManager.CheckPasswordAsync(user,login.Password))
+            if (user != null && await _userManager.CheckPasswordAsync(user, login.Password))
             {
-                //TwoPartAuth
-                if (user.TwoFactorEnabled)
-                {
-                    await _signInManager.SignOutAsync();
-                    await _signInManager.PasswordSignInAsync(user, login.Password, false, true);
-
-                    var token = await _userManager.GenerateTwoFactorTokenAsync(user, "Email");
-                    var message = new Message(new string[] { user.Email! }, "OPT Confirmation", token);
-                    _emailS.SendEmail(message);
-
-                    return StatusCode(StatusCodes.Status200OK,
-                    new Response { Status = "Success", Message = $"We have sent an OTP to Your Email {user.Email}" });
-                }
                 //Claimlist Create
                 var authClaims = new List<Claim>
                 {
@@ -153,16 +151,16 @@ namespace NextAuth.Controllers
 
                 //We add Roles to the Clam
 
-                var userRoles =await _userManager.GetRolesAsync(user);
-                foreach(var role in userRoles)
+                var userRoles = await _userManager.GetRolesAsync(user);
+                foreach (var role in userRoles)
                 {
                     authClaims.Add(new Claim(ClaimTypes.Role, role));
                 }
-              
+
 
 
                 //Generate the Token with Claims
-                var jwtToken=GetToken(authClaims);
+                var jwtToken = GetToken(authClaims);
                 return Ok(new
                 {
                     token = new JwtSecurityTokenHandler().WriteToken(jwtToken),
@@ -177,7 +175,7 @@ namespace NextAuth.Controllers
 
         [HttpPost]
         [Route("login-2FA")]
-        public async Task<IActionResult>LoginWithOTP(string code,string username)
+        public async Task<IActionResult> LoginWithOTP(string code, string username)
         {
             var user = await _userManager.FindByNameAsync(username);
 
@@ -226,8 +224,8 @@ namespace NextAuth.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> ForgotPassword([Required] string email)
         {
-            var user= await _userManager.FindByEmailAsync(email);
-            if(user != null)
+            var user = await _userManager.FindByEmailAsync(email);
+            if (user != null)
             {
                 var token = await _userManager.GeneratePasswordResetTokenAsync(user);
                 var forgotPasswordLink = Url.Action(nameof(ResetPassword), "Authentication", new { token, email = user.Email }, Request.Scheme);
@@ -238,16 +236,16 @@ namespace NextAuth.Controllers
                       new Response { Status = "Success", Message = $"Password change request is sent on Email {user.Email}. Please Open the link in your Email" });
             }
             return StatusCode(StatusCodes.Status400BadRequest,
-                     new Response { Status = "Error", Message = $"Couldn`t send link to Email, please Try Agian."});
+                     new Response { Status = "Error", Message = $"Couldn`t send link to Email, please Try Agian." });
 
         }
 
         [HttpGet("reset-Password")]
-        public async Task<IActionResult>ResetPassword(string token,string email)
+        public async Task<IActionResult> ResetPassword(string token, string email)
         {
-            var model=new ResetPassword { Token=token,Email=email };
+            var model = new ResetPassword { Token = token, Email = email };
             return Ok(new
-            { 
+            {
                 model
             });
         }
@@ -255,7 +253,7 @@ namespace NextAuth.Controllers
         [HttpPost]
         [Route("Reset-Password")]
         [AllowAnonymous]
-        public async Task<IActionResult>ResetPassword(ResetPassword resetPassword)
+        public async Task<IActionResult> ResetPassword(ResetPassword resetPassword)
         {
             var user = await _userManager.FindByEmailAsync(resetPassword.Email);
             if (user != null)
@@ -286,8 +284,8 @@ namespace NextAuth.Controllers
                 issuer: _configuration["JWT:ValidIssuer"],
                 audience: _configuration["JWT:ValidAudience"],
                 expires: DateTime.Now.AddHours(3),
-                claims:authClaims,
-                signingCredentials:new SigningCredentials(authSigningKey,SecurityAlgorithms.HmacSha256)
+                claims: authClaims,
+                signingCredentials: new SigningCredentials(authSigningKey, SecurityAlgorithms.HmacSha256)
                 );
             return token;
         }
