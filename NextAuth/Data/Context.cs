@@ -7,9 +7,9 @@ using System.Reflection.Emit;
 
 namespace NextAuth.Data
 {
-    public class Context:IdentityDbContext<IdentityUser>
+    public class Context : IdentityDbContext<ProfessorUser>
     {
-        public Context(DbContextOptions<Context> options):base(options)
+        public Context(DbContextOptions<Context> options) : base(options)
         {
 
         }
@@ -18,6 +18,7 @@ namespace NextAuth.Data
         public virtual DbSet<ProfessorPublicationDetail> ProfessorPublicationDetails { get; set; } = null!;
         public virtual DbSet<ProfessorPublicationForm> ProfessorPublicationForms { get; set; } = null!;
         public virtual DbSet<ProfessorPublicationType> ProfessorPublicationTypes { get; set; } = null!;
+        public DbSet<ProfessorUser> professorUsers { get; set; }
         protected override void OnModelCreating(ModelBuilder builder)
         {
             builder.Entity<ProfessorPublication>(entity =>

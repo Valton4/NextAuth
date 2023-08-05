@@ -12,7 +12,7 @@ namespace NextAuth.Models
         public string userId { get; set; }
         [ForeignKey("userId")]
         [ValidateNever]
-        public IdentityUser User { get; set; }
+        public ProfessorUser User { get; set; }
         public DateTime createdAt { get; set; }
         public DateTime updatedAt { get; set; }
 

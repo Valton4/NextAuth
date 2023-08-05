@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using NextAuth.Data;
+using NextAuth.Models;
 using NextAuth.ViewModels;
 using System;
 using System.Collections.Generic;
@@ -11,9 +12,9 @@ namespace User.Managment.Service.Services
 {
     public class GetLoggedInUser
     {
-        private readonly UserManager<IdentityUser> _userManager;
+        private readonly UserManager<ProfessorUser> _userManager;
         private readonly Context _con;
-        public GetLoggedInUser(UserManager<IdentityUser> userManager,
+        public GetLoggedInUser(UserManager<ProfessorUser> userManager,
             Context con)
         {
             _userManager = userManager;

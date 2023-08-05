@@ -22,13 +22,13 @@ namespace NextAuth.Controllers
     public class AuthenticationController : ControllerBase
     {
 
-        private readonly UserManager<IdentityUser> _userManager;
-        private readonly SignInManager<IdentityUser> _signInManager;
+        private readonly UserManager<ProfessorUser> _userManager;
+        private readonly SignInManager<ProfessorUser> _signInManager;
         private readonly RoleManager<IdentityRole> _roleMenager;
         private readonly IEmailService _emailS;
         private readonly IConfiguration _configuration;
-        public AuthenticationController(UserManager<IdentityUser> userManager,
-            RoleManager<IdentityRole> roleManager, SignInManager<IdentityUser> signInManager, IConfiguration configuration, IEmailService emailService)
+        public AuthenticationController(UserManager<ProfessorUser> userManager,
+            RoleManager<IdentityRole> roleManager, SignInManager<ProfessorUser> signInManager, IConfiguration configuration, IEmailService emailService)
         {
             _userManager = userManager;
             _roleMenager = roleManager;
@@ -62,7 +62,7 @@ namespace NextAuth.Controllers
                     new Response { Status = "Error", Message = "User already Exist" });
             }
             //Add new User
-            IdentityUser user = new()
+            ProfessorUser user = new()
             {
                 Email = registerUser.Email,
                 SecurityStamp = Guid.NewGuid().ToString(),

@@ -6,7 +6,9 @@ using Microsoft.OpenApi.Models;
 using NETCore.MailKit;
 using NETCore.MailKit.Core;
 using NextAuth.Data;
+using NextAuth.Models;
 using System.Text;
+using System.Text.Json.Serialization;
 using User.Managment.Service.Models;
 using User.Managment.Service.Services;
 using EmailService = User.Managment.Service.Services.EmailService;
@@ -18,14 +20,15 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<Context>(option => option.UseSqlServer
 (builder.Configuration.GetConnectionString("Connection")));
 
-builder.Services.AddIdentity<IdentityUser, IdentityRole>().
+builder.Services.AddIdentity<ProfessorUser, IdentityRole>().
     AddEntityFrameworkStores<Context>().AddDefaultTokenProviders();
 
 //Add Config for Request Email
 builder.Services.Configure<IdentityOptions>(opts => opts.SignIn.RequireConfirmedEmail = true);
 
 builder.Services.Configure<DataProtectionTokenProviderOptions>(opts => opts.TokenLifespan = TimeSpan.FromHours(10));
-
+builder.Services.AddMvc()
+                .AddJsonOptions(x => x.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles);
 
 builder.Services.AddAuthentication(option =>
 {

@@ -1,10 +1,11 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using NextAuth.Models;
 
 namespace NextAuth.ViewModels
 {
     public class UserWithRoles
     {
-        public IdentityUser User { get; set; }
-        public List<string> UserRoles { get; set; }
+        public ProfessorUser User { get; set; }
+        public IList<string>? UserRoles { get; set; }
     }
 }
