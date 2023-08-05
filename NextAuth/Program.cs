@@ -24,7 +24,7 @@ builder.Services.AddIdentity<IdentityUser, IdentityRole>().
 //Add Config for Request Email
 builder.Services.Configure<IdentityOptions>(opts => opts.SignIn.RequireConfirmedEmail = true);
 
-builder.Services.Configure<DataProtectionTokenProviderOptions>(opts =>opts.TokenLifespan=TimeSpan.FromHours(10));
+builder.Services.Configure<DataProtectionTokenProviderOptions>(opts => opts.TokenLifespan = TimeSpan.FromHours(10));
 
 
 builder.Services.AddAuthentication(option =>
@@ -45,14 +45,13 @@ builder.Services.AddAuthentication(option =>
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JWT:Secret"]))
     };
 });
-
 //Add Email Configs
 var emailConfig = builder.Configuration
     .GetSection("EmailConfiguration")
     .Get<EmailConfiguration>();
 builder.Services.AddSingleton(emailConfig);
 
-builder.Services.AddScoped<IEmailService,EmailService >();
+builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddCors();
 
 builder.Services.AddControllers();
@@ -65,14 +64,14 @@ builder.Services.AddSwaggerGen(option =>
     option.SwaggerDoc("v1", new OpenApiInfo { Title = "Auth Api", Version = "v1" });
     option.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
-        In=ParameterLocation.Header,
-        Description="Please Enter a Valid Token",
-        Name="Authorization",
-        Type=SecuritySchemeType.Http,
-        BearerFormat="JWT",
-        Scheme="Bearer"
+        In = ParameterLocation.Header,
+        Description = "Please Enter a Valid Token",
+        Name = "Authorization",
+        Type = SecuritySchemeType.Http,
+        BearerFormat = "JWT",
+        Scheme = "Bearer"
     });
-    option.AddSecurityRequirement(new OpenApiSecurityRequirement 
+    option.AddSecurityRequirement(new OpenApiSecurityRequirement
     {
         {
             new OpenApiSecurityScheme
@@ -84,7 +83,7 @@ builder.Services.AddSwaggerGen(option =>
                 }
             },
             new string[]{}
-        } 
+        }
     });
 
 });

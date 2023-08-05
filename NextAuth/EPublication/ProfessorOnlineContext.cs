@@ -1,26 +1,37 @@
-﻿using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+﻿using System;
+using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
-using NextAuth.EPublication;
-using NextAuth.Models;
-using System.Reflection.Emit;
+using Microsoft.EntityFrameworkCore.Metadata;
 
-namespace NextAuth.Data
+namespace NextAuth.EPublication
 {
-    public class Context:IdentityDbContext<IdentityUser>
+    public partial class ProfessorOnlineContext : DbContext
     {
-        public Context(DbContextOptions<Context> options):base(options)
+        public ProfessorOnlineContext()
         {
-
         }
-        public DbSet<Publications> Publications { get; set; }
+
+        public ProfessorOnlineContext(DbContextOptions<ProfessorOnlineContext> options)
+            : base(options)
+        {
+        }
+
         public virtual DbSet<ProfessorPublication> ProfessorPublications { get; set; } = null!;
         public virtual DbSet<ProfessorPublicationDetail> ProfessorPublicationDetails { get; set; } = null!;
         public virtual DbSet<ProfessorPublicationForm> ProfessorPublicationForms { get; set; } = null!;
         public virtual DbSet<ProfessorPublicationType> ProfessorPublicationTypes { get; set; } = null!;
-        protected override void OnModelCreating(ModelBuilder builder)
+
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            builder.Entity<ProfessorPublication>(entity =>
+            if (!optionsBuilder.IsConfigured)
+            {
+                optionsBuilder.UseSqlServer("Server=10.10.0.62;Database=ProfessorOnline;User ID=General;Password=!General2023!;TrustServerCertificate=True");
+            }
+        }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<ProfessorPublication>(entity =>
             {
                 entity.ToTable("ProfessorPublication");
 
@@ -29,7 +40,7 @@ namespace NextAuth.Data
                 entity.Property(e => e.UpdatedAt).HasColumnType("datetime");
             });
 
-            builder.Entity<ProfessorPublicationDetail>(entity =>
+            modelBuilder.Entity<ProfessorPublicationDetail>(entity =>
             {
                 entity.ToTable("ProfessorPublicationDetail");
 
@@ -46,7 +57,7 @@ namespace NextAuth.Data
                     .HasConstraintName("FK__Professor__Publi__25A691D2");
             });
 
-            builder.Entity<ProfessorPublicationForm>(entity =>
+            modelBuilder.Entity<ProfessorPublicationForm>(entity =>
             {
                 entity.ToTable("ProfessorPublicationForm");
 
@@ -55,24 +66,16 @@ namespace NextAuth.Data
                 entity.Property(e => e.Type).HasMaxLength(50);
             });
 
-            builder.Entity<ProfessorPublicationType>(entity =>
+            modelBuilder.Entity<ProfessorPublicationType>(entity =>
             {
                 entity.ToTable("ProfessorPublicationType");
 
                 entity.Property(e => e.Name).HasMaxLength(50);
             });
 
-            base.OnModelCreating(builder);
-            SeedRoles(builder);
+            OnModelCreatingPartial(modelBuilder);
         }
 
-        public void SeedRoles(ModelBuilder builder)
-        {
-            builder.Entity<IdentityRole>().HasData(
-                new IdentityRole() { Name = "Admin", ConcurrencyStamp = "1", NormalizedName = "Admin" },
-                new IdentityRole() { Name = "User", ConcurrencyStamp = "2", NormalizedName = "User" },
-                new IdentityRole() { Name = "HR", ConcurrencyStamp = "3", NormalizedName = "HR" }
-                );
-        }
+        partial void OnModelCreatingPartial(ModelBuilder modelBuilder);
     }
 }
