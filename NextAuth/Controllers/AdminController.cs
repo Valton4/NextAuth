@@ -6,7 +6,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Internal;
 using NextAuth.Data;
 using NextAuth.EPublication;
-using NextAuth.Migrations;
 using NextAuth.Models;
 using System.Globalization;
 

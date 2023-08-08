@@ -45,10 +45,9 @@ namespace NextAuth.Controllers
             }
 
             return Ok();
-
         }
         [HttpGet("getPublicationForms")]
-        public async Task<ProfessorPublicationForm[]> getPublicationForms()
+        public async Task<ActionResult<ProfessorPublicationForm[]>> getPublicationForms()
         {
             var user = await base.getLoggedInUser();
             if (user != null)
@@ -58,9 +57,11 @@ namespace NextAuth.Controllers
                 return publications;
             }
 
-            return null;
+            return StatusCode(StatusCodes.Status400BadRequest,
+                         new Response { Status = "Error", Message = $"Something went Wrong!!!" });
 
         }
+
         [HttpPost("postPublication")]
         public async Task<IActionResult> postPublication(ProfessorPublicationDetail publications)
         {
@@ -89,8 +90,37 @@ namespace NextAuth.Controllers
 
             return StatusCode(StatusCodes.Status400BadRequest,
                    new Response { Status = "Error", Message = $"Something went Wrong!!!" });
+        }
+        [HttpGet("GetPublicationTypes")]
+        public async Task<ActionResult<ProfessorPublicationType[]>> GetPublicationTypes()
+        {
+            var user = await base.getLoggedInUser();
+            if (user == null)
+                return StatusCode(StatusCodes.Status400BadRequest,
+                   new Response { Status = "Error", Message = $"Something went Wrong!!!" });
 
+            var data = await _con.ProfessorPublicationTypes.ToArrayAsync();
+            if (data.Length != 0)
+                return data;
+            return StatusCode(StatusCodes.Status400BadRequest,
+                  new Response { Status = "Error", Message = $"Something went Wrong!!!" });
         }
 
+        [HttpGet("getPublicationsFormsByType")]
+        public async Task<ActionResult<ProfessorPublicationForm[]>> getPublicationsFormsByType(int id)
+        {
+            var user = await base.getLoggedInUser();
+            if (user == null)
+                return StatusCode(StatusCodes.Status400BadRequest,
+                   new Response { Status = "Error", Message = $"Something went Wrong!!!" });
+            var response = await _con.ProfessorPublicationForms
+                .Where(x => x.PublicationTypeId == id)
+                .ToArrayAsync();
+            if (response.Length != 0)
+                return Ok(response);
+
+            return StatusCode(StatusCodes.Status400BadRequest,
+                    new Response { Status = "Error", Message = $"Something went Wrong!!!" });
+        }
     }
 }

@@ -67,7 +67,8 @@ namespace NextAuth.Controllers
                 Email = registerUser.Email,
                 SecurityStamp = Guid.NewGuid().ToString(),
                 UserName = registerUser.Username,
-                TwoFactorEnabled = true
+                TwoFactorEnabled = true,
+                ProfessorId = registerUser.ProfessorId
             };
 
             if (await _roleMenager.RoleExistsAsync(role))

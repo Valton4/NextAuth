@@ -12,5 +12,7 @@ namespace NextAuth.Models.Authentication.SignUp
         [Required(ErrorMessage = "Password is Required")]
         public string? Password { get; set; }
 
+        [Required(ErrorMessage = "ProfessorId is Required")]
+        public int ProfessorId { get; set; }
     }
 }
